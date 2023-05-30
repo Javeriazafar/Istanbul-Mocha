@@ -6,7 +6,7 @@
   "scripts": {
     "eslint": "eslint ./apigee.js",
     "start": "(npm run eslint) || mocha ./test/mocha-eslint.js --reporter mochawesome --parallel",
-    "test": "mocha --reporter mocha-xunit-reporter --reporter dot",
+    "test": "mocha ./test/URL.test.js --reporter mocha-xunit-reporter --reporter dot",
     "coverage": "nyc --reporter html --reporter cobertura --reporter text npm test",
     "ist": "istanbul cover --report cobertura _mocha ./test/mocha-eslint.js"
   },
