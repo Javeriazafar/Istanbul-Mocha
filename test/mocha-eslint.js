@@ -2,7 +2,7 @@
 
 var expect = require('chai').expect;
 const fs = require('fs');
-const fp = 'D:/EslintApigee/apigee.js';
+const fp = '../apigee.js';
 
 var filedata = fs.readFileSync(fp,'utf8')
 var designername = filedata.trim().split('\n')[1];
