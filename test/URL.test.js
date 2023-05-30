@@ -7,7 +7,7 @@ var sinon = require('sinon');
 //const codeToBeTested = require('../test.api');
 
 // Import the code to be tested
-var jsFile = 'D:/EslintApigee/URLtest.js';
+var jsFile = '../URLtest.js';
 
 global.context = {
 	getVariable: function(s) {},
