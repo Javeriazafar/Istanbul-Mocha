@@ -2,12 +2,14 @@
 /*jshint expr: true*/
 
 var expect = require('chai').expect;
-var assert = require('chai').assert;
 var sinon = require('sinon');
+var rewire = require('rewire');
+let chai = require('chai');
+let chaiHttp = require('chai-http');
 //const codeToBeTested = require('../test.api');
-
+chai.use(chaiHttp);
 // Import the code to be tested
-var jsFile = '../URLtest.js';
+var jsFile = '../test.api.js';
 
 global.context = {
 	getVariable: function(s) {},
@@ -23,8 +25,6 @@ global.Request = function(s) {};
 var contextGetVariableMethod, contextSetVariableMethod;
 var httpClientSendMethod;
 var requestConstructor;
-var postRequestHeaders;
-
 
 beforeEach(function () {
 	contextGetVariableMethod = sinon.stub(context, 'getVariable');
@@ -32,7 +32,6 @@ beforeEach(function () {
 	//sinon.spy(object, "method") creates a spy that wraps the existing function object.method. The spy will behave exactly like the original method (including when used as a constructor)
 	requestConstructor = sinon.spy(global, 'Request');
 	httpClientSendMethod = sinon.stub(httpClient, 'send');
-    postRequestHeaders = sinon.stub();
 });
 
 afterEach(function() {
@@ -43,45 +42,40 @@ afterEach(function() {
 });
 
 describe('Apigee Code', () => {
+
+ 
   // Define test cases
-  it('should send a POST request to assign a role', async () => {
+  it('should check all the parameters', async () => {
     // Stub the httpClient.send method
-    
+
     contextGetVariableMethod.withArgs('message.content').returns(JSON.stringify({ emailId: 'example@example.com', roles: { role: [{ organization: 'org1', role: 'role1' }] } }))
     contextGetVariableMethod.withArgs('message.header.Authorization').returns('BasicAuthHeader')
     //postRequestHeaders.returns({ 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'BasicAuthHeader'})
     var errorThrown = false;
     try { requireUncached(jsFile);} catch (e) { errorThrown = true; }
     expect(errorThrown).to.equal(false);
+    
     expect(httpClientSendMethod.calledOnce).to.be.true;  // true.to.be.true
     expect(requestConstructor.calledOnce).to.be.true;
     var requestConstructorArgs = requestConstructor.args[0];
-
-		//expect(temp.args[0]).to.equal('validateResponseType.isValid');
-		expect(requestConstructorArgs[0]).to.equal('http://10.21.180.112:4041/v1/organizations//userroles//users');		
-		expect(requestConstructorArgs[1]).to.equal('POST');		
-		expect(requestConstructorArgs[2]['Content-Type']).to.equal('application/x-www-form-urlencoded');	
-    
+    expect(requestConstructorArgs[0]).to.equal('http://10.21.180.112:4041/v1/organizations/testorg/userroles/admin/users');		
+    expect(requestConstructorArgs[1]).to.equal('GET');		
+    expect(requestConstructorArgs[2]['Authorization']).to.equal('basicAuth');	 
   });
 
-  it('should send a DELETE request to remove a role', async () => {
-    // Stub the httpClient.send method
-    const httpClient = {
-      send: sinon.stub().returns({ isSuccess: true, getResponse: sinon.stub().returns({ status: 204 }) }),
-    };
-
-    // Set up the necessary context variables
-    const context = {
-      getVariable: sinon.stub()
-        .withArgs('message.content').returns(JSON.stringify({ emailId: 'example@example.com', roles: { role: [{ organization: 'org1', role: 'role1' }] } }))
-        .withArgs('message.header.Authorization').returns('BasicAuthHeader'),
-      setVariable: sinon.stub(),
-    };
-
-    expect(httpClient.send.calledOnce).to.be.true;
-    expect(httpClient.send.firstCall.args[0].url).to.equal('http://10.21.180.112:4041/v1/o/org1/userroles/role1/users/example@example.com');
-    expect(httpClient.send.firstCall.args[0].method).to.equal('DELETE');
-    expect(httpClient.send.firstCall.args[0].headers.Authorization).to.equal('BasicAuthHeader');
+  it('API hit test ', (done) => {
+    
+    chai.request('https://catfact.ninja')
+        .get('/fact')
+        .end((err, res) => {
+          console.log(res.text)
+          expect(err).to.be.null;
+          expect(res).to.have.status(200);
+          expect(res).to.have.header('content-type', 'application/json');
+          //When done is passed in, Mocha will wait until the call to done():
+          //which signal that the callback has completed, and the assertions can be verified
+          done();
+        })
   });
 });
 
